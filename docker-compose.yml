@@ -1,0 +1,25 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: hello
+      POSTGRES_PASSWORD: hello
+      POSTGRES_DB: hello
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hello -d hello"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgres://hello:hello@db:5432/hello
+      VERSION_APP: "1.0.0"
+    depends_on:
+      db:
+        condition: service_healthy
